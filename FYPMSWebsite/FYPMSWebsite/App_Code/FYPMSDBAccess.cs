@@ -360,10 +360,9 @@ namespace FYPMSWebsite.App_Code
             //          a single attribute labelled NAME with value "Carl Chan".             *
             //********************************************************************************
             // MY TODO: check
-            sql = $"Select st.username, (st.firstName || ' ' || st.lastName) as NAME, proposalReport, progressReport, finalReport, presentation " +
-                $"from ProjectGroup P join RequirementGrades R on R.facultyUsername = P.reader join CSEStudent st using (groupId) " +
-                $"join Supervises S on S.fypId = P.assignedFypId " +
-                $"where groupId={groupId} and S.fypId={fypId} and P.reader = R.facultyUsername " +
+            sql = $"Select st.username, (firstName || ' ' || lastName) as NAME, proposalReport, progressReport, finalReport, presentation " +
+                $"from CSEStudent st natural join ProjectGroup PG join Supervises S on PG.assignedFypId = S.fypId join RequirementGrades R on R.studentUsername = st.username " +
+                $"where groupId={groupId} and assignedFypId={fypId} and PG.reader <> R.facultyUsername " +
                 $"order by lastName asc, firstName asc";
             return queryResult = myOracleDBAccess.GetData("TODO 22", sql);
         }
@@ -384,7 +383,7 @@ namespace FYPMSWebsite.App_Code
             //********************************************************************************
             // MY TODO: check
             sql = $"Select username, (st.firstName || ' ' || st.lastName) as NAME, proposalReport, progressReport, finalReport, presentation " +
-                $"from ProjectGroup P join RequirementGrades R on R.facultyUsername = P.reader join CSEStudent st using (groupId) " +
+                $"from CSEStudent st natural join ProjectGroup P join RequirementGrades R on R.studentUsername = st.username " +
                 $"where groupId={groupId} and reader='{username}' and P.reader = R.facultyUsername " +
                 $"order by lastName asc, firstName asc";
             return queryResult = myOracleDBAccess.GetData("TODO 23", sql);
@@ -434,7 +433,7 @@ namespace FYPMSWebsite.App_Code
             //          an FYP, the username of only one of the supervisors appears in a     *
             //          RequirementGrades record.                                            *
             //********************************************************************************
-            sql = $"Update RequirementGrades set proposalReport={proposalReport},progressReport={progressReport}, finalReport= {finalReport}, presentation={presentation} where studentUsername=TRIM('{studentUsername}') and facultyUsername=(Select username from Supervises where fypId={fypId})";
+            sql = $"Update RequirementGrades set proposalReport={proposalReport},progressReport={progressReport}, finalReport= {finalReport}, presentation={presentation} where studentUsername='{studentUsername}' and facultyUsername in (Select username from Supervises where fypId={fypId})";
             return updateResult = myOracleDBAccess.SetData("TODO 26", sql);
         }
 
@@ -696,7 +695,7 @@ namespace FYPMSWebsite.App_Code
             //          assigned fyp id and reader of the project groups assigned to an FYP. *
             //   Order: group code ascending                                                 *
             //********************************************************************************
-            sql = $"Select distinct groupId, groupCode, assignedFypId, (firstName || ' ' || lastName) as READER " +
+            sql = $"Select distinct groupId, groupCode, assignedFypId, reader " +
                 $"from ProjectGroup pg join Faculty f on f.username = pg.reader " +
                 $"where assignedFypId is not NULL " +
                 $"order by groupCode asc";

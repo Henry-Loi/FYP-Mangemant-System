@@ -1,2 +1,7 @@
 *.mdf
 *ldf
+.vs/
+FileContentIndex/
+
+*dll
+*pdb
