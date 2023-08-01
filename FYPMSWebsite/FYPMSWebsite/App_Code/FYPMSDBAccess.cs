@@ -267,10 +267,11 @@ namespace FYPMSWebsite.App_Code
         public DataTable GetGroupsAssignedToFYP(string fypId) // TODO 17
         {
             //********************************************************************************
-            // TODO 17: Construct an SQL statement to retrieve the group id, group code, priority, *
-            //          the first and last names of all the students in the group and the    *
-            //          first and last names of the reader for the project, if any, for those*
-            //          groups that have been assigned to the FYP identified by an fyp id.   *
+            // TODO 17: Construct an SQL statement to retrieve the group id, priority,       *
+            //          the first and last names of all the students in the group, group code*
+            //          and the first and last names of the reader for the project, if any,  *
+            //          for those groups that have been assigned to the FYP identified by an *
+            //          fyp id.                                                              *
             //   Order: group code ascending, student last name ascending, student first     *
             //          name ascending                                                       *
             // ----------------------------------------------------------------------------- *
@@ -282,11 +283,11 @@ namespace FYPMSWebsite.App_Code
             //          returned as a single attribute labelled READER with a space          *
             //          separating the first and last names.                                 *
             //********************************************************************************
-            sql = $" Select groupId, groupCode, priority, (s.firstName || ' ' || s.lastName) AS MEMBERS, (F.firstName || ' ' || F.lastName) AS READER " +
+            sql = $" Select groupId, priority, (s.firstName || ' ' || s.lastName) AS MEMBERS, groupCode, (F.firstName || ' ' || F.lastName) AS READER " +
                 $" from ProjectGroup pg " +
                 $" join CSEStudent s using (groupId) " +
-                $" natural join InterestedIn " +
-                $" join Faculty F ON pg.reader = F.username " +
+                $" left join Faculty F ON pg.reader = F.username " +
+                $" join InterestedIn using (groupId) " +
                 $" where assignedFypId = {fypId} " +
                 $" order by pg.groupCode ASC, s.lastName ASC, s.firstName ASC ";
             return queryResult = myOracleDBAccess.GetData("TODO 17", sql);
