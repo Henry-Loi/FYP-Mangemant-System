@@ -283,12 +283,12 @@ namespace FYPMSWebsite.App_Code
             //          returned as a single attribute labelled READER with a space          *
             //          separating the first and last names.                                 *
             //********************************************************************************
-            sql = $" Select groupId, priority, (s.firstName || ' ' || s.lastName) AS MEMBERS, groupCode, (F.firstName || ' ' || F.lastName) AS READER " +
+            sql = $" Select pg.groupId, priority, (s.firstName || ' ' || s.lastName) AS MEMBERS, pg.groupCode, (F.firstName || ' ' || F.lastName) AS READER " +
                 $" from ProjectGroup pg " +
-                $" join CSEStudent s using (groupId) " +
                 $" left join Faculty F ON pg.reader = F.username " +
-                $" join InterestedIn using (groupId) " +
-                $" where assignedFypId = {fypId} " +
+                $" left join CSEStudent s on pg.groupId = s.groupId " +
+                $" join InterestedIn I on pg.groupId = I.groupId " +
+                $" where assignedFypId = {fypId} and I.fypId = pg.assignedFypId " +
                 $" order by pg.groupCode ASC, s.lastName ASC, s.firstName ASC ";
             return queryResult = myOracleDBAccess.GetData("TODO 17", sql);
         }
@@ -363,7 +363,7 @@ namespace FYPMSWebsite.App_Code
             // MY TODO: check
             sql = $"Select st.username, (firstName || ' ' || lastName) as NAME, proposalReport, progressReport, finalReport, presentation " +
                 $"from CSEStudent st natural join ProjectGroup PG join Supervises S on PG.assignedFypId = S.fypId join RequirementGrades R on R.studentUsername = st.username " +
-                $"where groupId={groupId} and assignedFypId={fypId} and PG.reader <> R.facultyUsername " +
+                $"where groupId={groupId} and assignedFypId={fypId} and (PG.reader <> R.facultyUsername or reader is null) " +
                 $"order by lastName asc, firstName asc";
             return queryResult = myOracleDBAccess.GetData("TODO 22", sql);
         }
@@ -489,7 +489,8 @@ namespace FYPMSWebsite.App_Code
             // MY TODO: Need to count number of students in group
             sql = $"Select fypId, title, category, type, minStudents, maxStudents " +
                 $"from FYP " +
-                $"where status='available' and fypId not in (Select fypId from InterestedIn where groupId={groupId}) " +
+                $"where status='available' and fypId not in (Select fypId from InterestedIn where groupId={groupId}) and "+
+                $"(Select count(*) from CSEStudent where groupId = {groupId}) between minStudents and maxStudents " +
                 $"order by title asc";
             return queryResult = myOracleDBAccess.GetData("TODO 30", sql);
         }
@@ -697,12 +698,12 @@ namespace FYPMSWebsite.App_Code
             //   Order: group code ascending                                                 *
             //********************************************************************************
             sql = $"Select distinct groupId, groupCode, assignedFypId, reader " +
-                $"from ProjectGroup pg join Faculty f on f.username = pg.reader " +
+                $"from ProjectGroup pg " +
                 $"where assignedFypId is not NULL " +
                 $"order by groupCode asc";
             return queryResult = myOracleDBAccess.GetData("TODO 46", sql);
         }
 
         #endregion SQL Statements for Coordinator Webpages TODOS 42 - 46
-    }
+    }
 }

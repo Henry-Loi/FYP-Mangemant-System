@@ -101,12 +101,13 @@ set heading off
 select '*****************TODO17*****************' from dual;
 set heading on
 
-Select groupId, groupCode, (s.firstName || ' ' || s.lastName) as MEMBERS, 
-       (F.firstName || ' ' || F.lastName) as READER
-from (ProjectGroup p join CSEStudent s using (groupId)) 
-     join Faculty F On F.username = p.reader
-where assignedFypId=2
-order by groupCode asc, s.lastName asc, s.firstName asc;
+Select pg.groupId, priority, (s.firstName || ' ' || s.lastName) AS MEMBERS, pg.groupCode, (F.firstName || ' ' || F.lastName) AS READER, i.fypid, pg.assignedfypid
+from ProjectGroup pg
+left join Faculty F ON pg.reader = F.username
+left join CSEStudent s on pg.groupId = s.groupId
+join InterestedIn I on pg.groupId = I.groupid
+where assignedFypId = 1 and I.fypid = pg.assignedfypid;
+order by pg.groupCode ASC, s.lastName ASC, s.firstName ASC;
 
 set heading off
 select '*****************TODO18*****************' from dual;
