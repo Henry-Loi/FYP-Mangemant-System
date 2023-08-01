@@ -446,7 +446,7 @@ namespace FYPMSWebsite.App_Code
             //          given by a reader, identified by a username, to a student identified *
             //          by a username.                                                       *
             //********************************************************************************
-            sql = $"Update RequirementGrades set proposalReport='{proposalReport}',progressReport='{progressReport}', finalReport= '{finalReport}', presentation='{presentation}' where facultyUsername='{facultyUsername}' and studentUsername='{studentUsername}'";
+            sql = $"Update RequirementGrades set proposalReport={proposalReport},progressReport={progressReport}, finalReport= {finalReport}, presentation={presentation} where facultyUsername='{facultyUsername}' and studentUsername='{studentUsername}'";
             return updateResult = myOracleDBAccess.SetData("TODO 27", sql);
         }
 
